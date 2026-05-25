@@ -7,7 +7,7 @@
 <br>
 
 <!-- screenshot of the portal goes here -->
-<img src="docs/screenshot-portal.png" alt="Dopamirage portal" width="640" />
+<img src="docs/portal.png" alt="Dopamirage portal" width="640" />
 
 <br><br>
 

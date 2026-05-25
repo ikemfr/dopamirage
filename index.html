@@ -669,9 +669,16 @@
         <p class="lang-serif italic text-[13px] opacity-45 leading-relaxed mb-3" id="portal-nudge-text"></p>
         <a class="tip-link inline-block text-[14px] opacity-30 hover:opacity-70 transition py-2 px-4" style="letter-spacing:0.18em;" href="https://www.buymeacoffee.com/ike_mfr" target="_blank" rel="noopener noreferrer" data-tip-source="nudge" id="portal-nudge-link"></a>
       </div>
-      <!-- Always-present, very subtle bottom-corner tip dot. -->
-      <div class="text-right mt-8 -mr-2">
-        <a class="tip-link inline-block text-[14px] opacity-15 hover:opacity-50 transition py-3 px-4" style="letter-spacing:0.18em;" href="https://www.buymeacoffee.com/ike_mfr" target="_blank" rel="noopener noreferrer" title="support" data-tip-source="portal-dot">·</a>
+      <!-- Always-present, very subtle support link. A small candle glyph
+           that reads as Dopamirage's identity icon. Never demands attention. -->
+      <div class="text-center mt-12">
+        <a class="tip-link inline-flex items-center gap-2 text-[12px] font-mono-cap opacity-25 hover:opacity-70 transition py-3 px-4" style="letter-spacing:0.22em; color: var(--ink);" href="https://www.buymeacoffee.com/ike_mfr" target="_blank" rel="noopener noreferrer" title="support" data-tip-source="portal-dot">
+          <svg width="11" height="13" viewBox="0 0 11 13" fill="none" style="display:inline-block; vertical-align:-2px;">
+            <path d="M5.5 1.2 Q3.2 3.5 3.2 6.2 Q3.2 8.4 5.5 8.4 Q7.8 8.4 7.8 6.2 Q7.8 3.5 5.5 1.2 Z" fill="rgba(184,148,86,0.85)"/>
+            <rect x="5.1" y="8.4" width="0.8" height="2.6" fill="rgba(40,30,20,0.55)"/>
+          </svg>
+          <span data-i18n="tip_label_full">keep the candle lit</span>
+        </a>
       </div>
     </div>
   </div>
@@ -959,7 +966,13 @@
     </div>
     <div class="makers-note" id="gratitude-makers-note"></div>
     <div class="text-right">
-      <a id="tip-button" class="tip-link inline-block text-[14px] opacity-25 hover:opacity-70 transition pt-3 pl-6" style="letter-spacing:0.1em;" href="https://www.buymeacoffee.com/ike_mfr" target="_blank" rel="noopener noreferrer" title="support" data-i18n="tip_label">·</a>
+      <a id="tip-button" class="tip-link inline-flex items-center gap-1.5 text-[11px] font-mono-cap opacity-30 hover:opacity-70 transition pt-3 pl-6" style="letter-spacing:0.2em; color: var(--ink);" href="https://www.buymeacoffee.com/ike_mfr" target="_blank" rel="noopener noreferrer" title="support" data-i18n="tip_label_full">
+        <svg width="9" height="11" viewBox="0 0 11 13" fill="none" style="display:inline-block;">
+          <path d="M5.5 1.2 Q3.2 3.5 3.2 6.2 Q3.2 8.4 5.5 8.4 Q7.8 8.4 7.8 6.2 Q7.8 3.5 5.5 1.2 Z" fill="rgba(184,148,86,0.85)"/>
+          <rect x="5.1" y="8.4" width="0.8" height="2.6" fill="rgba(40,30,20,0.55)"/>
+        </svg>
+        keep the candle lit
+      </a>
     </div>
   </div>
 </div>
@@ -1200,14 +1213,14 @@ const Nudge = {
       if (hoursSinceDismiss < 24) return;
       /* Determine variant based on session count to vary tone */
       const variants_ja = [
-        '気がつくと、ここで過ごす時間が、少しずつ積み重なっています。',
-        'この場所が、いまもひらかれていることに、誰かの手があります。',
-        '無料のまま、静かなまま——それを続けるための、見えない仕組みがあります。'
+        '気がつくと、ここで過ごす時間が、少しずつ積み重なっていました。',
+        'この場所が静かなままでいられるのは、通り過ぎた誰かの手によります。',
+        'Dopamirage は、灯し続けてくれる人がいる間、開いたままです。'
       ];
       const variants_en = [
-        'A few quiet hours have collected here, with you.',
-        'This place stays open because of people who pass through it.',
-        'Free, quiet, unaccompanied — kept that way by something behind the door.'
+        'Quiet hours have collected here, with you.',
+        'This place stays quiet because of people who pass through it.',
+        'Dopamirage stays open for as long as someone keeps the candle lit.'
       ];
       const variants = (I18N.lang === 'ja') ? variants_ja : variants_en;
       const text = variants[Math.floor(Math.random() * variants.length)];
@@ -1333,8 +1346,9 @@ const I18N = {
     archive_tip:    { en: '·', ja: '・' },
     tip_mark:       { en: '', ja: '' },
     tip_label:      { en: '·', ja: '・' },
+    tip_label_full: { en: 'keep the candle lit', ja: '蝋燭を、灯したままに' },
     nudge_text:     { en: '', ja: '' },
-    nudge_link:     { en: 'leave something behind', ja: 'なにか残していく' },
+    nudge_link:     { en: 'keep the candle lit', ja: '蝋燭を、灯したままに' },
     archive_hundred:{ en: '', ja: '' },
     info_eyebrow:   { en: 'how it works', ja: '仕組み' },
     info_recommend: { en: 'how to use', ja: '使い方' },

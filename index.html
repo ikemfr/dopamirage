@@ -6992,8 +6992,9 @@ const Tsubomi = {
       const panVal = clamp(((x / this.width) - 0.5) * 1.4, -1, 1);
       if (quality === 'perfect') {
         Audio.strikeKizunaBell(0.7, panVal, 1.0);
-        setTimeout(() => Audio.strikeKizunaBell(0.5, panVal, 1.25), 120);
-        setTimeout(() => Audio.strikeKizunaBell(0.4, panVal, 1.5), 260);
+        const _gen = this._gen || 0; const _self = this;
+        setTimeout(() => { if (_self.active && _self._gen === _gen) Audio.strikeKizunaBell(0.5, panVal, 1.25); }, 120);
+        setTimeout(() => { if (_self.active && _self._gen === _gen) Audio.strikeKizunaBell(0.4, panVal, 1.5); }, 260);
       } else if (quality === 'good') {
         Audio.strikeKizunaBell(0.5, panVal, 0.9);
       } else {
@@ -7015,10 +7016,11 @@ const Tsubomi = {
     if (Audio.enabled) {
       Audio.strikeBrassBowl(0.6 + level * 0.04);
       const cascade = Math.min(level, 6);
+      const _gen = this._gen || 0; const _self = this;
       for (let i = 0; i < cascade; i++) {
         const pan = (i % 2 === 0 ? -1 : 1) * (0.4 + Math.random() * 0.4);
         const freq = 0.7 + i * 0.18;
-        setTimeout(() => Audio.strikeKizunaBell(0.5, pan, freq), 180 + i * 140);
+        setTimeout(() => { if (_self.active && _self._gen === _gen) Audio.strikeKizunaBell(0.5, pan, freq); }, 180 + i * 140);
       }
     }
     if (navigator.vibrate) {
@@ -7047,6 +7049,7 @@ const Tsubomi = {
   },
   stop() {
     this.active = false;
+    this._gen = (this._gen || 0) + 1;
     if (this.raf) cancelAnimationFrame(this.raf);
   },
   phaseInfo(now) {

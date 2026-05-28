@@ -511,6 +511,49 @@
     background: radial-gradient(130% 130% at 50% 50%, transparent 55%, rgba(0,0,0,0.22) 100%);
   }
   body.stay-deep #stay-vignette { opacity: 1; }
+
+  /* ── Progressive "settling" — concept: as attention is restored, the
+        scene literally calms. Over a long sitting the whole app very
+        gradually warms, softens, and slows. Four near-imperceptible
+        stages; each transition takes a full minute so it's only ever
+        felt as "things got calmer," never seen happening. ── */
+  body { transition: filter 60s linear; }
+  body.settle-1 { filter: saturate(0.96) brightness(0.995); }
+  body.settle-2 { filter: saturate(0.90) brightness(0.985) sepia(0.04); }
+  body.settle-3 { filter: saturate(0.84) brightness(0.975) sepia(0.07); }
+  body.settle-4 { filter: saturate(0.78) brightness(0.965) sepia(0.10) contrast(0.98); }
+  /* Breath period eases longer the longer you stay — the pacing itself relaxes */
+  body.settle-2 { --breath-period: 7.4s; }
+  body.settle-3 { --breath-period: 8.0s; }
+  body.settle-4 { --breath-period: 8.8s; }
+
+  /* A single quiet line of text that surfaces at deep stillness, then fades */
+  #stay-whisper {
+    position: fixed; left: 0; right: 0; bottom: 9%;
+    text-align: center; pointer-events: none; z-index: 3;
+    font-family: 'Noto Serif JP', serif; font-style: italic;
+    font-size: 14px; letter-spacing: 0.06em;
+    color: rgba(184,148,86,0.0);
+    transition: color 6s ease;
+  }
+  body.whisper-show #stay-whisper { color: rgba(184,148,86,0.5); }
+
+  /* ── Breathing border — a soft inner glow that expands and contracts on
+        the box-breath period during calm idle moments. A gentle, optional
+        breath cue that reinforces the room's pacing without any UI. ── */
+  #breath-border {
+    position: fixed; inset: 0; pointer-events: none; z-index: 1;
+    opacity: 0; transition: opacity 3s ease;
+    box-shadow: inset 0 0 90px 10px rgba(184,148,86,0.0);
+  }
+  body.breath-pulse #breath-border {
+    opacity: 1;
+    animation: breathGlow var(--breath-period) cubic-bezier(.45,.05,.55,.95) infinite;
+  }
+  @keyframes breathGlow {
+    0%, 100% { box-shadow: inset 0 0 70px 6px rgba(184,148,86,0.04); }
+    50%      { box-shadow: inset 0 0 150px 26px rgba(184,148,86,0.12); }
+  }
   .memorial-mark {
     font-family: 'Noto Serif JP', serif;
     font-size: 44px; line-height: 1;
@@ -612,6 +655,8 @@
 <!-- Long-stay immersion overlays (ambient; reward presence) -->
 <div id="stay-vignette" aria-hidden="true"></div>
 <div id="stillness-aurora" aria-hidden="true"></div>
+<div id="stay-whisper" aria-hidden="true"></div>
+<div id="breath-border" aria-hidden="true"></div>
 
 <div id="top-chrome" class="fixed top-0 left-0 w-full z-50 px-5 py-4 flex justify-between items-center md:top-4 md:left-1/2 md:-translate-x-1/2 md:w-auto md:justify-center md:gap-8 md:px-8 md:py-3 entropy-blur transition-all duration-700">
   
@@ -623,7 +668,7 @@
         <span class="audio-bars"><span></span><span></span><span></span><span></span></span>
       </div>
     </button>
-    <input type="range" id="volume-slider" min="0" max="100" value="68" class="calm-slider" aria-label="Volume" />
+    <input type="range" id="volume-slider" min="0" max="100" value="58" class="calm-slider" aria-label="Volume" />
   </div>
 
   <button id="archive-toggle" class="chrome-btn-minimal" style="color: var(--ink);" data-i18n="archive_btn">archive</button>
@@ -2994,7 +3039,7 @@ const Audio = {
     let v = slider ? parseInt(slider.value, 10) : (this.savedVolume || 68);
     if (this.isMuted) v = 0;
     const norm = Math.max(0, Math.min(100, v)) / 100;
-    return Math.pow(norm, 1.4) * 0.6;
+    return Math.pow(norm, 1.5) * 0.42;
   },
 
   init() {
@@ -3023,7 +3068,7 @@ const Audio = {
            0.35 ceiling felt thin; a mild power curve with a 0.6 ceiling gives
            a fuller, more present sound without harsh peaks. */
         const norm = val / 100;
-        const gainValue = Math.pow(norm, 1.4) * 0.6;
+        const gainValue = Math.pow(norm, 1.5) * 0.42;
         if (this.masterGain) {
           this.masterGain.gain.setTargetAtTime(gainValue, this.ctx.currentTime, 0.05);
         }
@@ -3112,15 +3157,32 @@ const Audio = {
        that ran in every room, claiming "4Hz theta" effects. The actual
        room voices below are richer and don't need an always-on layer.) */
 
-    /* Sub-tone 44Hz — Resonance Lock easter egg */
+    /* Resonance Lock reward tone — REBUILT.
+       The old version was a single 44Hz sine. At that frequency it beat
+       against the room voices and the device speaker, producing a
+       throbbing, alert-like vibration that many found unpleasant — and
+       because it lived on its own gain node (not a room bus) it could
+       linger after leaving a room. Replaced with a soft, consonant low
+       pad: a warm root + perfect fifth, heavily lowpassed and slowly
+       drifting, so the "reward for stillness" feels like the room
+       deepening rather than an alarm. */
     this.subToneGain = this.ctx.createGain();
     this.subToneGain.gain.value = 0;
+    const subLP = this.ctx.createBiquadFilter();
+    subLP.type = 'lowpass'; subLP.frequency.value = 260; subLP.Q.value = 0.4;
+    subLP.connect(this.subToneGain);
     this.subToneGain.connect(this.masterGain);
-    this.subTone = this.ctx.createOscillator();
-    this.subTone.type = 'sine';
-    this.subTone.frequency.value = 44;
-    this.subTone.connect(this.subToneGain);
-    this.subTone.start();
+    [{ f: 110, g: 0.6, d: 0.03 }, { f: 164.8, g: 0.28, d: 0.045 }].forEach((v) => {
+      const osc = this.ctx.createOscillator();
+      osc.type = 'sine'; osc.frequency.value = v.f;
+      const og = this.ctx.createGain(); og.gain.value = v.g;
+      const plfo = this.ctx.createOscillator();
+      plfo.type = 'sine'; plfo.frequency.value = v.d;
+      const plfoG = this.ctx.createGain(); plfoG.gain.value = 0.5;
+      plfo.connect(plfoG); plfoG.connect(osc.frequency);
+      osc.connect(og); og.connect(subLP);
+      osc.start(); plfo.start();
+    });
 
     /* Per-voice gain busses — each room sums into one */
     ['veil','inkbleed','wick','kizuna','tsubomi'].forEach(k => {
@@ -3206,16 +3268,16 @@ const Audio = {
     const out = this.voiceGains.wick;
     /* Floor: very faint air movement, lowpassed white noise — barely audible */
     const floor = this.ctx.createGain();
-    floor.gain.value = 0.10; /* much quieter than before */
+    floor.gain.value = 0.06; /* softened further — noise was reported harsh */
     floor.connect(out);
     const src = this.ctx.createBufferSource();
     src.buffer = this._makeNoiseBuffer();
     src.loop = true;
     src.playbackRate.value = 0.4;
     const lp = this.ctx.createBiquadFilter();
-    lp.type = 'lowpass'; lp.frequency.value = 300; lp.Q.value = 0.5;
+    lp.type = 'lowpass'; lp.frequency.value = 220; lp.Q.value = 0.4;
     const hp = this.ctx.createBiquadFilter();
-    hp.type = 'highpass'; hp.frequency.value = 60;
+    hp.type = 'highpass'; hp.frequency.value = 50;
     const floorGain = this.ctx.createGain();
     floorGain.gain.value = 0.5;
     src.connect(hp); hp.connect(lp); lp.connect(floorGain); floorGain.connect(floor);
@@ -3266,12 +3328,12 @@ const Audio = {
     src.playbackRate.value = 1.5 + Math.random() * 0.6;
     const bp = this.ctx.createBiquadFilter();
     bp.type = 'bandpass';
-    bp.frequency.value = 1400 + Math.random() * 1800;
-    bp.Q.value = 4.5;
+    bp.frequency.value = 900 + Math.random() * 900;
+    bp.Q.value = 3.0;
     const g = this.ctx.createGain();
     g.gain.setValueAtTime(0, t0);
-    g.gain.linearRampToValueAtTime(0.18 + Math.random() * 0.10, t0 + 0.002);
-    g.gain.exponentialRampToValueAtTime(0.0005, t0 + 0.04 + Math.random() * 0.03);
+    g.gain.linearRampToValueAtTime(0.09 + Math.random() * 0.05, t0 + 0.003);
+    g.gain.exponentialRampToValueAtTime(0.0005, t0 + 0.05 + Math.random() * 0.03);
     src.connect(bp); bp.connect(g); g.connect(this.masterGain);
     src.start(t0); src.stop(t0 + 0.1);
     /* Small body resonance — a tiny "tonk" */
@@ -3322,15 +3384,15 @@ const Audio = {
        slow ~0.4Hz beat instead of the old 1.5Hz buzz, plus a gentle pitch
        drift so it shimmers rather than beats mechanically. */
     const padBus = this.ctx.createGain();
-    padBus.gain.value = 0.4;
-    [82.5, 82.9].forEach((f, i) => {
+    padBus.gain.value = 0.32;
+    [82.4, 82.6].forEach((f, i) => {
       const osc = this.ctx.createOscillator();
       osc.type = 'sine'; osc.frequency.value = f;
       const g = this.ctx.createGain();
-      g.gain.value = 0.30;
+      g.gain.value = 0.28;
       const plfo = this.ctx.createOscillator();
-      plfo.type = 'sine'; plfo.frequency.value = 0.02 + i * 0.011;
-      const plfoG = this.ctx.createGain(); plfoG.gain.value = 0.4;
+      plfo.type = 'sine'; plfo.frequency.value = 0.015 + i * 0.007;
+      const plfoG = this.ctx.createGain(); plfoG.gain.value = 0.18;
       plfo.connect(plfoG); plfoG.connect(osc.frequency);
       osc.connect(g); g.connect(padBus);
       osc.start(); plfo.start();
@@ -3451,6 +3513,15 @@ const Audio = {
     /* Distant-air ambience runs in every room, stops at the portal */
     if (modeKey == null) this._stopDistantAir();
     else this._startDistantAir();
+    /* SAFETY: on portal entry, force the Resonance Lock pad off so no
+       ambient tone can ever linger after leaving a room. */
+    if (modeKey == null) {
+      this.setSubTone(false);
+      if (typeof ResonanceLock !== 'undefined') {
+        ResonanceLock.engaged = false;
+        ResonanceLock.modeActive = false;
+      }
+    }
     this.currentVoice = modeKey;
   },
 
@@ -3517,24 +3588,25 @@ const Audio = {
     const src = this.ctx.createBufferSource();
     src.buffer = this._makeNoiseBuffer();
     src.loop = true;
-    src.playbackRate.value = 0.5 + Math.random() * 0.3;
-    const bp = this.ctx.createBiquadFilter();
-    bp.type = 'bandpass';
-    bp.frequency.value = 360 + Math.random() * 260;
-    bp.Q.value = 0.7;
+    src.playbackRate.value = 0.35 + Math.random() * 0.2;
+    /* Lowpass (not bandpass) keeps it soft and pillowy — no hiss/sizzle */
+    const lp = this.ctx.createBiquadFilter();
+    lp.type = 'lowpass';
+    lp.frequency.value = 320 + Math.random() * 140;
+    lp.Q.value = 0.4;
     const g = this.ctx.createGain();
-    const dur = 7 + Math.random() * 6;
+    const dur = 9 + Math.random() * 7;
     g.gain.setValueAtTime(0, t0);
-    g.gain.linearRampToValueAtTime(0.05, t0 + dur * 0.4);
+    g.gain.linearRampToValueAtTime(0.018, t0 + dur * 0.45);
     g.gain.linearRampToValueAtTime(0, t0 + dur);
     const pan = this.ctx.createStereoPanner ? this.ctx.createStereoPanner() : null;
     if (pan) {
-      const from = (Math.random() < 0.5 ? -0.8 : 0.8);
+      const from = (Math.random() < 0.5 ? -0.6 : 0.6);
       pan.pan.setValueAtTime(from, t0);
       pan.pan.linearRampToValueAtTime(-from, t0 + dur);
-      src.connect(bp); bp.connect(g); g.connect(pan); pan.connect(this.masterGain);
+      src.connect(lp); lp.connect(g); g.connect(pan); pan.connect(this.masterGain);
     } else {
-      src.connect(bp); bp.connect(g); g.connect(this.masterGain);
+      src.connect(lp); lp.connect(g); g.connect(this.masterGain);
     }
     src.start(t0); src.stop(t0 + dur + 0.2);
   },
@@ -3545,10 +3617,10 @@ const Audio = {
       if (self.enabled && typeof Router !== 'undefined' && Router.current && Router.current !== 'portal') {
         self._distantAir();
       }
-      /* long irregular gap: 45–110s */
-      self._airTimer = setTimeout(loop, 45000 + Math.random() * 65000);
+      /* long irregular gap: 70–160s */
+      self._airTimer = setTimeout(loop, 70000 + Math.random() * 90000);
     };
-    this._airTimer = setTimeout(loop, 25000 + Math.random() * 30000);
+    this._airTimer = setTimeout(loop, 40000 + Math.random() * 40000);
   },
   _stopDistantAir() {
     if (this._airTimer) { clearTimeout(this._airTimer); this._airTimer = null; }
@@ -4085,7 +4157,7 @@ const Audio = {
   },
 
 
-  /* 44Hz sub-tone (Resonance Lock) */
+  /* Resonance Lock low pad (warm, consonant, quiet) */
   setSubTone(on) {
     if (!this.ctx || !this.subToneGain) return;
     if (on === this.subToneActive) return;
@@ -4093,7 +4165,7 @@ const Audio = {
     const t = this.ctx.currentTime;
     this.subToneGain.gain.cancelScheduledValues(t);
     this.subToneGain.gain.setValueAtTime(this.subToneGain.gain.value, t);
-    this.subToneGain.gain.linearRampToValueAtTime(on ? 0.07 : 0, t + (on ? 4.0 : 1.5));
+    this.subToneGain.gain.linearRampToValueAtTime(on ? 0.04 : 0, t + (on ? 5.0 : 1.2));
   },
 
   toggle() {
@@ -4106,7 +4178,7 @@ const Audio = {
       const t = this.ctx.currentTime;
       this.masterGain.gain.cancelScheduledValues(t);
       this.masterGain.gain.setValueAtTime(this.masterGain.gain.value, t);
-      this.masterGain.gain.linearRampToValueAtTime(0.20, t + 2.0);
+      this.masterGain.gain.linearRampToValueAtTime(this._targetMasterGain(), t + 2.0);
       btn.classList.remove('audio-off');
       label.dataset.i18n = 'audio_on';
       label.textContent = I18N.t('audio_on');
@@ -4163,7 +4235,8 @@ const Entropy = {
   }
 };
 
-/* Easter Egg #6 — Resonance Lock: 7 breaths of idle in any room → 44Hz fades in */
+/* Easter Egg #6 — Resonance Lock: 7 breaths of idle in any room →
+   a warm, consonant low pad gently fades in (was a 44Hz throb; rebuilt). */
 const ResonanceLock = {
   lastInputAt: performance.now(),
   threshold: 6667 * 7,
@@ -4202,8 +4275,18 @@ const Immersion = {
   _last: performance.now(),
   vignetteOn: false,
   auroraOn: false,
+  stage: 0,
+  whisperShown: false,
   AURORA_AT: 18 * 60 * 1000,     // ~18 minutes in rooms
   VIGNETTE_AT: 6 * 60 * 1000,    // gentle deepening starts at ~6 minutes
+  /* Progressive "settling" stages (cumulative minutes in rooms). Each one
+     warms/softens the scene a touch and slows the breath pacing. */
+  STAGES: [3, 8, 14, 22].map(m => m * 60 * 1000),
+  WHISPER_AT: 26 * 60 * 1000,
+  whispers: {
+    en: 'you have been still for a while now',
+    ja: 'しばらく、静かにしていられましたね'
+  },
   tick() {
     const now = performance.now();
     const dt = now - this._last;
@@ -4212,6 +4295,18 @@ const Immersion = {
     if (typeof Router !== 'undefined' && Router.current && Router.current !== 'portal'
         && document.visibilityState === 'visible') {
       this.roomMs += dt;
+    }
+    /* Settling stages — add the highest reached class, never remove
+       (the calm earned in a session persists for that session). */
+    let reached = 0;
+    for (let i = 0; i < this.STAGES.length; i++) {
+      if (this.roomMs >= this.STAGES[i]) reached = i + 1;
+    }
+    if (reached > this.stage) {
+      for (let s = this.stage + 1; s <= reached; s++) {
+        document.body.classList.add('settle-' + s);
+      }
+      this.stage = reached;
     }
     if (!this.vignetteOn && this.roomMs >= this.VIGNETTE_AT) {
       this.vignetteOn = true;
@@ -4222,6 +4317,17 @@ const Immersion = {
       document.body.classList.add('aurora-on');
       if (typeof State !== 'undefined') State.markSecret('stillness_aurora');
       if (typeof Audio !== 'undefined' && Audio.enabled) Audio.auraSwell();
+    }
+    if (!this.whisperShown && this.roomMs >= this.WHISPER_AT) {
+      this.whisperShown = true;
+      const el = document.getElementById('stay-whisper');
+      if (el) {
+        const lang = (typeof I18N !== 'undefined' && I18N.lang === 'ja') ? 'ja' : 'en';
+        el.textContent = this.whispers[lang];
+        document.body.classList.add('whisper-show');
+        /* let it rest a while, then fade away — a passing acknowledgment */
+        setTimeout(() => document.body.classList.remove('whisper-show'), 16000);
+      }
     }
   }
 };

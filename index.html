@@ -486,6 +486,31 @@
     50%      { transform: scale(1.18); }
   }
   body.breath-pulse .return-dot .core { animation: dotBreath var(--breath-period) cubic-bezier(.45,.05,.55,.95) infinite; }
+
+  /* ── Long-stay immersion: a barely-perceptible aurora that breathes
+        across the screen edges, and a slowly-deepening vignette. Both are
+        purely ambient — they reward presence without demanding attention. ── */
+  #stillness-aurora {
+    position: fixed; inset: 0; pointer-events: none; z-index: 2;
+    opacity: 0; transition: opacity 8s ease;
+    background:
+      radial-gradient(120% 80% at 50% -20%, rgba(120,170,150,0.10), transparent 60%),
+      radial-gradient(120% 80% at 50% 120%, rgba(150,140,190,0.10), transparent 60%);
+    mix-blend-mode: screen;
+    animation: auroraDrift 38s ease-in-out infinite;
+  }
+  body.aurora-on #stillness-aurora { opacity: 1; }
+  @keyframes auroraDrift {
+    0%,100% { background-position: 0% 0%, 0% 0%; filter: hue-rotate(0deg); }
+    50%     { background-position: 8% 4%, -6% -4%; filter: hue-rotate(18deg); }
+  }
+  #stay-vignette {
+    position: fixed; inset: 0; pointer-events: none; z-index: 1;
+    opacity: 0; transition: opacity 12s ease;
+    box-shadow: inset 0 0 180px 40px rgba(0,0,0,0.0);
+    background: radial-gradient(130% 130% at 50% 50%, transparent 55%, rgba(0,0,0,0.22) 100%);
+  }
+  body.stay-deep #stay-vignette { opacity: 1; }
   .memorial-mark {
     font-family: 'Noto Serif JP', serif;
     font-size: 44px; line-height: 1;
@@ -584,6 +609,10 @@
 </head>
 <body>
 
+<!-- Long-stay immersion overlays (ambient; reward presence) -->
+<div id="stay-vignette" aria-hidden="true"></div>
+<div id="stillness-aurora" aria-hidden="true"></div>
+
 <div id="top-chrome" class="fixed top-0 left-0 w-full z-50 px-5 py-4 flex justify-between items-center md:top-4 md:left-1/2 md:-translate-x-1/2 md:w-auto md:justify-center md:gap-8 md:px-8 md:py-3 entropy-blur transition-all duration-700">
   
   <button id="lang-toggle" class="chrome-btn-minimal" style="color: var(--ink);">EN / JP</button>
@@ -594,7 +623,7 @@
         <span class="audio-bars"><span></span><span></span><span></span><span></span></span>
       </div>
     </button>
-    <input type="range" id="volume-slider" min="0" max="100" value="50" class="calm-slider" aria-label="Volume" />
+    <input type="range" id="volume-slider" min="0" max="100" value="68" class="calm-slider" aria-label="Volume" />
   </div>
 
   <button id="archive-toggle" class="chrome-btn-minimal" style="color: var(--ink);" data-i18n="archive_btn">archive</button>
@@ -1999,32 +2028,13 @@ const I18N = {
 "Kindness in words creates confidence.\nKindness in thinking creates profoundness. Kindness in giving creates love.\n— Lao Tzu",
 "The earth has music\nfor those who listen.\n— George Santayana",
 "What we have done for ourselves alone dies with us;\nwhat we have done for others remains and is immortal.\n— Albert Pike",
-"There is more treasure in books\nthan in all the pirate's loot on Treasure Island.\n— Walt Disney",
 "The flower that blooms in adversity\nis the rarest and most beautiful of all.\n— Chinese Proverb",
 "Truth has no special time of its own.\nIts hour is now — always.\n— Albert Schweitzer",
-"If you cannot do great things,\ndo small things in a great way.\n— Napoleon Hill",
 "What lies behind us and what lies ahead of us\nare tiny matters compared to what lives within us.\n— Henry David Thoreau",
 "The greatest discovery of any generation is that\na human can alter his life by altering his attitude.\n— William James",
 "Act as if what you do makes a difference.\nIt does.\n— William James",
-"Life is not measured by the breaths we take,\nbut by the moments that take our breath away.\n— Maya Angelou",
 "It is never too late to be what\nyou might have been.\n— George Eliot",
-"What you do today\ncan improve all your tomorrows.\n— Ralph Marston",
-"We must let go of the life we have planned,\nso as to accept the one that is waiting for us.\n— Joseph Campbell",
 "When you are not practicing,\nremember, someone somewhere is practicing.\n— Ed Macauley",
-"The shoe that fits one person\npinches another; there is no recipe for living that suits all cases.\n— Carl Jung",
-"Until you make the unconscious conscious,\nit will direct your life and you will call it fate.\n— Carl Jung",
-"Everything that irritates us about others\ncan lead us to an understanding of ourselves.\n— Carl Jung",
-"You are what you do,\nnot what you say you'll do.\n— Carl Jung",
-"I am not what happened to me,\nI am what I choose to become.\n— Carl Jung",
-"Whatever you fight, you strengthen,\nand what you resist, persists.\n— Carl Jung",
-"Show me a sane man\nand I will cure him for you.\n— Carl Jung",
-"Loneliness does not come from having no people around,\nbut from being unable to communicate the things that seem important.\n— Carl Jung",
-"The privilege of a lifetime\nis to become who you truly are.\n— Carl Jung",
-"Knowing your own darkness is the best method\nfor dealing with the darknesses of other people.\n— Carl Jung",
-"Even a happy life\ncannot be without a measure of darkness.\n— Carl Jung",
-"We cannot change anything until\nwe accept it.\n— Carl Jung",
-"Mistakes are, after all,\nthe foundations of truth.\n— Carl Jung",
-"Where wisdom reigns,\nthere is no conflict between thinking and feeling.\n— Carl Jung",
 "I would rather die on my feet\nthan live on my knees.\n— Emiliano Zapata",
 "Adversity introduces a man\nto himself.\n— Anonymous (proverb)",
 "He who has a 'why' to live for\ncan bear with almost any 'how'.\n— Friedrich Nietzsche",
@@ -2117,33 +2127,17 @@ const I18N = {
 "When you see a worthy person,\nendeavor to emulate him.\n— Confucius",
 "The cautious seldom err.\n— Confucius",
 "Even the darkest night will end\nand the sun will rise.\n— Victor Hugo",
-"To love at all is to be vulnerable.\n— C. S. Lewis",
 "It is not in the stars to hold our destiny\nbut in ourselves.\n— William Shakespeare",
-"Man is not made for defeat.\nA man can be destroyed but not defeated.\n— Ernest Hemingway",
 "There is no exercise better for the heart\nthan reaching down and lifting people up.\n— John Holmes",
-"What we have once enjoyed\nwe can never lose. All that we love deeply becomes a part of us.\n— Helen Keller",
-"Although the world is full of suffering,\nit is also full of the overcoming of it.\n— Helen Keller",
-"Tears are words that need to be written.\n— Paulo Coelho",
-"We must accept finite disappointment,\nbut never lose infinite hope.\n— Martin Luther King Jr. (public-domain text)",
-"There are wounds that never show on the body\nthat are deeper and more hurtful than anything that bleeds.\n— Laurell K. Hamilton",
-"The world breaks everyone,\nand afterward, many are strong at the broken places.\n— Ernest Hemingway",
 "I have learned, in whatsoever state I am,\ntherewith to be content.\n— Saint Paul",
 "My imperfections and failures are as much a blessing from God\nas my successes and talents.\n— Mahatma Gandhi",
 "Even a small star\nshines in the darkness.\n— Finnish Proverb",
-"Hard times don't create heroes.\nIt is during the hard times when the hero within us is revealed.\n— Bob Riley",
 "It does not matter how slowly you go\nas long as you do not stop.\n— Confucius",
-"We do not see things as they are;\nwe see them as we are.\n— Anaïs Nin",
 "Where there is great love\nthere are always wishes.\n— Willa Cather",
 "Our truest life is when we are in dreams\nawake.\n— Henry David Thoreau",
-"What we call the secret of happiness\nis no more a secret than our willingness to choose life.\n— Leo Buscaglia",
 "I'm not afraid of storms,\nfor I'm learning how to sail my ship.\n— Louisa May Alcott",
-"There is some good in this world,\nand it's worth fighting for.\n— J. R. R. Tolkien",
 "I count him braver who overcomes his desires\nthan him who conquers his enemies.\n— Aristotle",
-"Promise me you'll always remember:\nyou're braver than you believe, and stronger than you seem.\n— A. A. Milne",
-"We have to be able to look at our wounds\nbefore we can heal them.\n— Carl Jung",
 "The wound is the place\nwhere the Light enters you.\n— Rumi",
-"Each friend represents a world in us,\na world possibly not born until they arrive.\n— Anaïs Nin",
-"When you can't find someone to follow,\nyou have to find a way to lead by example.\n— Roxane Gay",
 "Even in the mud and scum of things,\nsomething always, always sings.\n— Ralph Waldo Emerson",
 "The art of being happy lies in the power\nof extracting happiness from common things.\n— Henry Ward Beecher",
 "The strongest of all warriors are these two —\nTime and Patience.\n— Leo Tolstoy",
@@ -2151,10 +2145,8 @@ const I18N = {
 "Nothing in life is to be feared,\nit is only to be understood.\n— Marie Curie",
 "Now is the time to understand more,\nso that we may fear less.\n— Marie Curie",
 "We must believe that we are gifted for something,\nand that this thing, at whatever cost, must be attained.\n— Marie Curie",
-"There are far better things ahead\nthan any we leave behind.\n— C. S. Lewis",
 "I have not failed.\nI've just found 10,000 ways that won't work.\n— Thomas Edison",
 "Many of life's failures are people\nwho did not realize how close they were to success when they gave up.\n— Thomas Edison",
-"If you can't fly then run,\nif you can't run then walk, if you can't walk then crawl, but whatever you do, you have to keep moving forward.\n— Martin Luther King Jr.",
 "Out of suffering have emerged the strongest souls;\nthe most massive characters are seared with scars.\n— Kahlil Gibran",
 "Your pain is the breaking of the shell\nthat encloses your understanding.\n— Kahlil Gibran",
 "And ever has it been that love knows not its own depth\nuntil the hour of separation.\n— Kahlil Gibran",
@@ -2164,8 +2156,6 @@ const I18N = {
 "You give but little when you give of your possessions.\nIt is when you give of yourself that you truly give.\n— Kahlil Gibran",
 "Tenderness and kindness are not signs of weakness and despair,\nbut manifestations of strength and resolution.\n— Kahlil Gibran",
 "Doubt is a pain too lonely\nto know that faith is his twin brother.\n— Kahlil Gibran",
-"The most beautiful people we have known are those\nwho have known defeat, known suffering, known loss, and have found their way out of the depths.\n— Elisabeth Kübler-Ross",
-"Hope is being able to see\nthat there is light despite all of the darkness.\n— Desmond Tutu",
 "I have learned that to be with those I like\nis enough.\n— Walt Whitman",
 "We were together. I forget the rest.\n— Walt Whitman",
 "Resist much, obey little.\n— Walt Whitman",
@@ -2189,27 +2179,6 @@ const I18N = {
 "Beauty is not caused. It is.\n— Emily Dickinson",
 "Pain has an element of blank;\nit cannot recollect when it began, or if there was a day when it was not.\n— Emily Dickinson",
 "Until I feared I would lose it,\nI never loved to read. One does not love breathing.\n— Harper Lee",
-"The cure for boredom is curiosity.\nThere is no cure for curiosity.\n— Dorothy Parker",
-"Take care of all your memories.\nFor you cannot relive them.\n— Bob Dylan",
-"I am not what happened to me,\nI am what I choose to become.\n— Carl Jung",
-"The privilege of a lifetime\nis to become who you truly are.\n— Carl Jung",
-"Knowing your own darkness\nis the best method for dealing with the darknesses of other people.\n— Carl Jung",
-"Loneliness does not come from having no people around,\nbut from being unable to communicate the things that seem important.\n— Carl Jung",
-"There is no coming to consciousness\nwithout pain.\n— Carl Jung",
-"Even a happy life cannot be without\na measure of darkness.\n— Carl Jung",
-"We cannot change anything\nuntil we accept it.\n— Carl Jung",
-"What you resist, persists.\n— Carl Jung",
-"Until you make the unconscious conscious,\nit will direct your life and you will call it fate.\n— Carl Jung",
-"Everything that irritates us about others\ncan lead us to an understanding of ourselves.\n— Carl Jung",
-"The shoe that fits one person\npinches another; there is no recipe for living that suits all cases.\n— Carl Jung",
-"Mistakes are, after all,\nthe foundations of truth.\n— Carl Jung",
-"Where wisdom reigns,\nthere is no conflict between thinking and feeling.\n— Carl Jung",
-"Show me a sane man\nand I will cure him for you.\n— Carl Jung",
-"Your vision will become clear\nonly when you can look into your own heart.\n— Carl Jung",
-"Who looks outside, dreams;\nwho looks inside, awakes.\n— Carl Jung",
-"I am not what I think;\nI am not what I do; I am what I become.\n— Carl Jung",
-"The pendulum of the mind\nalternates between sense and nonsense, not between right and wrong.\n— Carl Jung",
-"The least of things with a meaning\nis worth more in life than the greatest of things without it.\n— Carl Jung",
 "Solitude is the place of purification.\n— Martin Buber",
 "All real living is meeting.\n— Martin Buber",
 "The world is not comprehensible,\nbut it is embraceable.\n— Martin Buber",
@@ -2264,16 +2233,6 @@ const I18N = {
 "All my life through, the new sights of Nature\nmade me rejoice like a child.\n— Marie Curie",
 "Pure science is the desire to know\nthe causes of things.\n— Marie Curie",
 "Now is the time to understand more,\nso that we may fear less.\n— Marie Curie",
-"Painting is just another way of keeping a diary.\n— Pablo Picasso",
-"Every child is an artist.\nThe problem is how to remain an artist once we grow up.\n— Pablo Picasso",
-"Art washes away from the soul\nthe dust of everyday life.\n— Pablo Picasso",
-"Action is the foundational key to all success.\n— Pablo Picasso",
-"Learn the rules like a pro,\nso you can break them like an artist.\n— Pablo Picasso",
-"Inspiration exists, but it has to find you working.\n— Pablo Picasso",
-"Everything you can imagine is real.\n— Pablo Picasso",
-"The chief enemy of creativity is good sense.\n— Pablo Picasso",
-"Art is the lie that enables us to realize the truth.\n— Pablo Picasso",
-"Give me a museum and I'll fill it.\n— Pablo Picasso",
 "Music expresses that which cannot be put into words\nand that which cannot remain silent.\n— Victor Hugo",
 "He who opens a school door\ncloses a prison.\n— Victor Hugo",
 "To love another person\nis to see the face of God.\n— Victor Hugo",
@@ -2284,16 +2243,6 @@ const I18N = {
 "To learn to read is to light a fire;\nevery syllable that is spelled out is a spark.\n— Victor Hugo",
 "The future has several names. For the weak it is impossible.\nFor the fainthearted it is unknown. For the thoughtful it is ideal.\n— Victor Hugo",
 "Music expresses feeling and thought,\nwithout language.\n— Victor Hugo",
-"In three words I can sum up everything I've learned about life: it goes on.\n— Robert Frost",
-"The best way out is always through.\n— Robert Frost",
-"Education is the ability to listen to almost anything\nwithout losing your temper.\n— Robert Frost",
-"Two roads diverged in a wood, and I —\nI took the one less traveled by.\n— Robert Frost",
-"Forgive me my nonsense\nas I also forgive the nonsense of those who think they talk sense.\n— Robert Frost",
-"A poem begins as a lump in the throat,\na sense of wrong, a homesickness, a lovesickness.\n— Robert Frost",
-"Freedom lies in being bold.\n— Robert Frost",
-"Half the world is composed of people\nwho have something to say and can't.\n— Robert Frost",
-"Don't ever take a fence down\nuntil you know why it was put up.\n— Robert Frost",
-"The reason why worry kills more people than work is that\nmore people worry than work.\n— Robert Frost",
 "Be kind, for everyone you meet\nis fighting a hard battle.\n— Ian Maclaren",
 "In the silence of nature\none finds the language of the spirit.\n— Anonymous",
 "The good physician treats the disease;\nthe great physician treats the patient who has the disease.\n— William Osler",
@@ -2316,46 +2265,6 @@ const I18N = {
 "Finish each day and be done with it.\n— Ralph Waldo Emerson",
 "For every minute you are angry\nyou lose sixty seconds of happiness.\n— Ralph Waldo Emerson",
 "What you do speaks so loudly\nthat I cannot hear what you say.\n— Ralph Waldo Emerson",
-"In war, resolution; in defeat, defiance;\nin victory, magnanimity; in peace, good will.\n— Winston Churchill",
-"Success is going from failure to failure\nwithout losing your enthusiasm.\n— Winston Churchill",
-"If you're going through hell, keep going.\n— Winston Churchill",
-"Never give in — never, never, never, never,\nin nothing great or small, large or petty.\n— Winston Churchill",
-"A pessimist sees the difficulty in every opportunity;\nan optimist sees the opportunity in every difficulty.\n— Winston Churchill",
-"Courage is what it takes to stand up and speak;\ncourage is also what it takes to sit down and listen.\n— Winston Churchill",
-"We make a living by what we get,\nbut we make a life by what we give.\n— Winston Churchill",
-"Attitude is a little thing\nthat makes a big difference.\n— Winston Churchill",
-"It is no use saying, 'We are doing our best.'\nYou have got to succeed in doing what is necessary.\n— Winston Churchill",
-"The price of greatness is responsibility.\n— Winston Churchill",
-"Architecture is the learned game,\ncorrect and magnificent, of forms assembled in the light.\n— Le Corbusier",
-"A great architect is not made\nby way of a brain nearly so much as he is made by way of a cultivated, enriched heart.\n— Frank Lloyd Wright",
-"The mother art is architecture.\nWithout an architecture of our own we have no soul of our own civilization.\n— Frank Lloyd Wright",
-"The longer I live the more beautiful life becomes.\n— Frank Lloyd Wright",
-"I believe in God, only I spell it Nature.\n— Frank Lloyd Wright",
-"Television is chewing gum for the eyes.\n— Frank Lloyd Wright",
-"Form follows function — that has been misunderstood.\nForm and function should be one, joined in a spiritual union.\n— Frank Lloyd Wright",
-"Study nature, love nature,\nstay close to nature. It will never fail you.\n— Frank Lloyd Wright",
-"An idea is salvation by imagination.\n— Frank Lloyd Wright",
-"Less is more. ... God is in the details.\n— Ludwig Mies van der Rohe",
-"Photography is the story I fail to put into words.\n— Destin Sparks",
-"You don't take a photograph, you make it.\n— Ansel Adams",
-"There are no rules for good photographs,\nthere are only good photographs.\n— Ansel Adams",
-"The single most important component of a camera\nis the twelve inches behind it.\n— Ansel Adams",
-"A great photograph is one that fully expresses\nwhat one feels about what is being photographed.\n— Ansel Adams",
-"It is horrifying that we have to fight our own government\nto save the environment.\n— Ansel Adams",
-"In wisdom gathered over time I have found that every experience is a form of exploration.\n— Ansel Adams",
-"Sometimes I do get to places just when God's ready to have somebody click the shutter.\n— Ansel Adams",
-"My approach to photography is based on my belief in the vigor and validity of the world of nature.\n— Ansel Adams",
-"Twelve significant photographs in any one year is a good crop.\n— Ansel Adams",
-"Mathematics, rightly viewed,\npossesses not only truth, but supreme beauty.\n— Bertrand Russell",
-"The whole problem with the world is that fools and fanatics are always so certain of themselves,\nand wiser people so full of doubts.\n— Bertrand Russell",
-"I would never die for my beliefs because I might be wrong.\n— Bertrand Russell",
-"To fear love is to fear life,\nand those who fear life are already three parts dead.\n— Bertrand Russell",
-"The only thing that will redeem mankind is cooperation.\n— Bertrand Russell",
-"Do not fear to be eccentric in opinion,\nfor every opinion now accepted was once eccentric.\n— Bertrand Russell",
-"The good life is one inspired by love\nand guided by knowledge.\n— Bertrand Russell",
-"In all affairs it's a healthy thing\nnow and then to hang a question mark on the things you have long taken for granted.\n— Bertrand Russell",
-"Boredom is a vital problem for the moralist,\nsince half the sins of mankind are caused by the fear of it.\n— Bertrand Russell",
-"A stupid man's report of what a clever man says is never accurate\nbecause he unconsciously translates what he hears into something he can understand.\n— Bertrand Russell",
 "Chess is life in miniature.\nChess is struggle, chess is battles.\n—",
 "When you see a good move, look for a better one.\n— Emanuel Lasker",
 "The hardest game to win is a won game.\n— Emanuel Lasker",
@@ -2366,7 +2275,6 @@ const I18N = {
 "It is better to follow even the shadow of the best plan than to remain undecided.\n— Aron Nimzowitsch",
 "Tactics is what you do when there is something to do;\nstrategy is what you do when there is nothing to do.\n— Savielly Tartakower",
 "The blunders are all there on the board, waiting to be made.\n— Savielly Tartakower",
-"In war you can be killed only once,\nbut in politics many times.\n— Winston Churchill",
 "A general should be slow to punish\nand swift to reward.\n— Ovid",
 "Strategy without tactics is the slowest route to victory.\nTactics without strategy is the noise before defeat.\n— Sun Tzu",
 "Know your enemy and know yourself,\nin a hundred battles you will never be defeated.\n— Sun Tzu",
@@ -2382,7 +2290,6 @@ const I18N = {
 "Animals feed; man eats;\nonly the man of intellect knows how to eat.\n— Brillat-Savarin",
 "A dessert without cheese\nis like a beautiful woman with only one eye.\n— Brillat-Savarin",
 "To invite a person to your house\nis to take charge of their happiness during the time they are under your roof.\n— Brillat-Savarin",
-"He who does not enjoy his own company\nis usually right.\n— Coco Chanel",
 "Cookery is become an art, a noble science.\n— Robert Burton",
 "Govern a family as you would cook a small fish —\nvery gently.\n— Lao Tzu",
 "Hunger is the best sauce.\n— Latin Proverb"
@@ -2392,7 +2299,6 @@ const I18N = {
 "What is reading, but silent conversation?\n— Walter Savage Landor",
 "A book is a garden, an orchard, a storehouse,\na party, a company by the way.\n— Henry Ward Beecher",
 "Some books are to be tasted, others to be swallowed,\nand some few to be chewed and digested.\n— Francis Bacon",
-"There is no friend as loyal as a book.\n— Ernest Hemingway",
 "To learn to read is to light a fire;\nevery syllable that is spelled out is a spark.\n— Victor Hugo",
 "The man who does not read good books\nhas no advantage over the man who can't read them.\n— Mark Twain",
 "Books are the quietest and most constant of friends.\n— Charles W. Eliot",
@@ -2598,17 +2504,13 @@ const I18N = {
 "言葉における親切は信頼を生み、思考における親切は深さを生み、\n与えることにおける親切は愛を生む。\n— 老子",
 "大地は\n耳を傾ける者のために音楽を奏でる。\n— ジョージ・サンタヤーナ",
 "自分のためだけにしたことは我々と共に死に、\n他者のためにしたことは残り、永遠となる。\n— アルバート・パイク",
-"宝島の海賊の戦利品すべてよりも、\n本の中にはより多くの宝がある。\n— ウォルト・ディズニー",
 "逆境に咲く花は、\nすべての花の中で最も稀で美しい。\n— 中国のことわざ",
 "真理に固有の時はない。\nその時は今、常に今である。\n— アルベルト・シュバイツァー",
-"偉大なことができないなら、\n小さなことを偉大なやり方でせよ。\n— ナポレオン・ヒル",
 "我々の後ろにあるものや前にあるものは、\n我々の内に生きるものに比べれば取るに足らない。\n— ヘンリー・デイヴィッド・ソロー",
 "いかなる世代の最大の発見も、人間は態度を変えることで\n人生を変えられるという発見である。\n— ウィリアム・ジェイムズ",
 "自分の行いが違いを生むかのように行動せよ。\n実際にそうだから。\n— ウィリアム・ジェイムズ",
-"人生は我々が呼吸する回数では測られない。\n息を呑むほどの瞬間によって測られる。\n— マヤ・アンジェロウ（一般的な引用）",
 "なれたかもしれない自分になるのに、\n遅すぎるということはない。\n— ジョージ・エリオット",
 "今日することが、\n明日からのすべてを良くする。\n— ラルフ・マーストン",
-"我々は計画した人生を手放さねばならぬ。\n我々を待っている人生を受け入れるために。\n— ジョセフ・キャンベル",
 "練習していない時、\n誰かがどこかで練習していることを思い出せ。\n— エド・マコーリー",
 "ある人に合う靴は、\n別の人を締めつける。すべての人に合う生き方の方程式はない。\n— カール・ユング",
 "無意識を意識化するまで、それはあなたの人生を導き、\nあなたはそれを運命と呼ぶ。\n— カール・ユング",
@@ -2716,14 +2618,9 @@ const I18N = {
 "賢人を見たら、\nそれに倣うよう努めよ。\n— 孔子",
 "慎重なる者は、\nめったに過たない。\n— 孔子",
 "どんなに暗い夜も、必ず終わる。\nそして太陽は昇る。\n— ヴィクトル・ユゴー",
-"愛するということは、傷つきやすくなるということ。\n— C・S・ルイス（初期作品より）",
 "私たちの運命は星にあるのではなく、\n私たち自身の中にある。\n— ウィリアム・シェイクスピア",
 "人は破壊されることはあっても、\n敗北することはない。\n— アーネスト・ヘミングウェイ",
 "心にとってこれ以上の運動はない——\n手を伸ばして、誰かを起き上がらせること。\n— ジョン・ホームズ",
-"かつて喜びとしたものを失うことはない。\n深く愛したものは、私たちの一部となる。\n— ヘレン・ケラー",
-"世界は苦しみに満ちている。\nしかしそれを乗り越えることにも、また満ちている。\n— ヘレン・ケラー",
-"涙は、書かれるべき言葉である。\n— パウロ・コエーリョ",
-"有限の失望は受け入れねばならぬ。\nしかし無限の希望を失ってはならない。\n— マーティン・ルーサー・キング・ジュニア",
 "体に現れない傷は、\nどんな出血よりも深く、痛い。\n— ローレル・K・ハミルトン",
 "世界はすべての人を打ち砕く。\nそしてその後、多くの者は砕けた場所で強くなる。\n— アーネスト・ヘミングウェイ",
 "どんな状況にあっても、\nそれに満ち足りることを学んだ。\n— 聖パウロ",
@@ -2731,17 +2628,13 @@ const I18N = {
 "小さな星でも、\n闇の中では光る。\n— フィンランドのことわざ",
 "苦しい時が英雄を作るのではない。\nそれは、私たちの内なる英雄が現れる時である。\n— 伝承",
 "止まらない限り、\nどんなにゆっくり進んでも構わない。\n— 孔子",
-"私たちは物事をあるがままには見ない。\n自分のままに見る。\n— アナイス・ニン",
 "大きな愛があるところに、\n常に願いがある。\n— ウィラ・キャザー",
 "私たちの最も本当の人生は、\n夢の中で目覚めている時である。\n— ヘンリー・デイヴィッド・ソロー",
 "幸福の秘密と呼ばれるものは、\n人生を選ぶ意志のことだ。\n— レオ・バスカリア",
 "私は嵐を恐れない。\n船の操縦法を学んでいるからだ。\n— ルイーザ・メイ・オルコット",
-"この世界にはいくらかの善がある。\nそしてそれは、戦うに値する。\n— J・R・R・トールキン",
 "敵に勝つ者よりも、\n己の欲に勝つ者をより勇敢と数える。\n— アリストテレス",
-"いつもこれを覚えておいて。\nあなたは自分が信じているより勇敢で、見えるより強い。\n— A・A・ミルン",
 "私たちは傷を癒す前に、\nそれを直視できねばならぬ。\n— カール・ユング",
 "傷は、\n光があなたに入ってくる場所である。\n— ルーミー",
-"ひとりひとりの友は、私たちの中の世界を表す。\nその友が訪れるまで生まれぬ世界を。\n— アナイス・ニン",
 "従う相手が見つからぬ時、\n自ら範を示して導くしかない。\n— ロクサーヌ・ゲイ",
 "泥と滓の中にさえ、\nいつも、いつも歌うものがある。\n— ラルフ・ワルド・エマーソン",
 "幸せに生きる技は、\nありふれたものから幸せを取り出す力にある。\n— ヘンリー・ウォード・ビーチャー",
@@ -2750,10 +2643,8 @@ const I18N = {
 "人生に恐れるものはない。\nあるのは、理解すべきものだけ。\n— マリー・キュリー",
 "今こそ、もっと理解すべき時。\nそうすれば、もっと少なく恐れるようになる。\n— マリー・キュリー",
 "私たちは、何かのために才能を授かっていると信じねばならぬ。\nそしてそれは、いかなる代償を払っても達成されねばならぬ。\n— マリー・キュリー",
-"後ろに残してきたものよりも、\nずっとよいものが、前にある。\n— C・S・ルイス（初期作品より）",
 "私は失敗したことがない。\nうまくいかない方法を一万通り見つけただけだ。\n— トーマス・エジソン",
 "人生の失敗の多くは、\n諦めた時に成功にどれほど近づいていたか気づかなかった人たちだ。\n— トーマス・エジソン",
-"飛べないなら走れ、走れないなら歩け、歩けないなら這え。\nどんなやり方でも、前に進み続けるんだ。\n— マーティン・ルーサー・キング・ジュニア",
 "苦しみから最も強い魂が現れた。\n最も巨大な人格は、傷跡で焼き刻まれている。\n— カリール・ジブラン",
 "あなたの痛みは、\nあなたの理解を包む殻が破れることである。\n— カリール・ジブラン",
 "愛は、別れの時まで\n自らの深さを知らない。\n— カリール・ジブラン",
@@ -2788,8 +2679,6 @@ const I18N = {
 "美は引き起こされるものではない。\nそれは、ある。\n— エミリー・ディキンソン",
 "痛みには空白の要素がある。\nそれはいつ始まったかを思い出せない。それがなかった日があったかも。\n— エミリー・ディキンソン",
 "失うことを恐れるまで、\n私は読書を愛しはしなかった。呼吸を愛しはしないように。\n— ハーパー・リー",
-"退屈の治療薬は好奇心。\n好奇心に治療薬はない。\n— ドロシー・パーカー",
-"あなたのすべての記憶を大切にしなさい。\n二度と生き直せないのだから。\n— ボブ・ディラン",
 "私は、私に起きたことではない。\nなろうと選んだものである。\n— カール・ユング",
 "一生の特権とは、\nあなたが本当に何者であるかになることである。\n— カール・ユング",
 "自分の闇を知ることが、\n他人の闇に対処する最良の方法である。\n— カール・ユング",
@@ -2883,16 +2772,6 @@ const I18N = {
 "読むことを学ぶは火を灯すこと。\n綴られる音節の一つ一つが火花である。\n— ヴィクトル・ユゴー",
 "未来には幾つかの名がある。弱者には不可能、\n臆病者には未知、思慮深き者には理想。\n— ヴィクトル・ユゴー",
 "音楽は感情と思考を、\n言葉なしに表す。\n— ヴィクトル・ユゴー",
-"人生について学んだことを三語でまとめれば——\nそれは続く、ということ。\n— ロバート・フロスト",
-"最善の出口は、いつも貫き通すことの中にある。\n— ロバート・フロスト",
-"教育とは、ほとんど何を聞いても\n冷静を失わずにいられる能力である。\n— ロバート・フロスト",
-"森の中で二つの道が分かれていた。\n私は——人の通った少ない方を選んだ。\n— ロバート・フロスト",
-"私の戯言を許してくれ。\n私もまた、まともなふりをする人の戯言を許そう。\n— ロバート・フロスト",
-"詩はのどに詰まる塊として始まる。\n何かが間違っているという感覚、郷愁、恋しさ。\n— ロバート・フロスト",
-"自由は大胆さの中にある。\n— ロバート・フロスト",
-"世界の半分は、\n言いたいことがあるのに言えない人々で構成されている。\n— ロバート・フロスト",
-"塀をなぜ建てたかわからぬうちは、\nその塀を取り壊すな。\n— ロバート・フロスト",
-"心配が労働より多くの人を殺すのは、\n働く者より心配する者が多いからだ。\n— ロバート・フロスト",
 "優しくあれ。あなたが出会うすべての人は\n厳しい戦いを戦っている。\n— イアン・マクラーレン",
 "自然の静寂の中に、\n人は精神の言葉を見出す。\n— 伝承",
 "良き医師は病を治し、\n偉大な医師は病をもつ患者を治す。\n— ウィリアム・オスラー",
@@ -2925,36 +2804,7 @@ const I18N = {
 "態度はささいなものだが、\n大きな違いを生む。\n— ウィンストン・チャーチル",
 "「最善を尽くしている」と言うのは無意味だ。\n必要なことを成功させねばならぬ。\n— ウィンストン・チャーチル",
 "偉大さの代償は責任である。\n— ウィンストン・チャーチル",
-"建築とは、光の中で組み上げられた形態の、\n学び抜かれた、正確かつ壮麗な遊戯である。\n— ル・コルビュジエ",
-"偉大な建築家は脳で作られるのではない。\n培われ、豊かにされた心によって作られる。\n— フランク・ロイド・ライト",
-"芸術の母は建築である。\n我々自身の建築なくして、文明の魂はない。\n— フランク・ロイド・ライト",
-"長く生きるほど、人生は美しくなる。\n— フランク・ロイド・ライト",
-"私は神を信じる。ただ、それを自然と綴る。\n— フランク・ロイド・ライト",
-"テレビは目のためのチューインガムである。\n— フランク・ロイド・ライト",
-"形は機能に従う——これは誤解されてきた。\n形と機能はひとつ、精神的な合一であるべきだ。\n— フランク・ロイド・ライト",
-"自然を学べ、自然を愛せ、\n自然のそばにいよ。それは決してあなたを裏切らない。\n— フランク・ロイド・ライト",
-"アイデアは想像力による救済である。\n— フランク・ロイド・ライト",
-"少ないことは豊かなこと……\n神は細部に宿る。\n— ミース・ファン・デル・ローエ",
 "写真は、言葉にできなかった物語である。\n— 伝承",
-"写真は撮るものではない。作るものだ。\n— アンセル・アダムス",
-"良い写真にルールはない。\nあるのは良い写真だけだ。\n— アンセル・アダムス",
-"カメラの最も重要な部品は、\nそのうしろにある十二インチである。\n— アンセル・アダムス",
-"偉大な写真とは、写されたものについて感じることを\n完全に表現したものである。\n— アンセル・アダムス",
-"我々が環境を守るために自国の政府と戦わねばならぬのは、\n身の毛のよだつことだ。\n— アンセル・アダムス",
-"時を経て集めた知恵から、\nあらゆる経験は探検の一形態だと気づいた。\n— アンセル・アダムス",
-"時に私は、神がシャッターを切らせる準備ができている場所に、\nちょうど居合わせる。\n— アンセル・アダムス",
-"私の写真へのアプローチは、\n自然界の活力と妥当性への信念に基づく。\n— アンセル・アダムス",
-"年に十二枚の意義ある写真は、\n良い収穫である。\n— アンセル・アダムス",
-"数学は、正しく見れば、\n真理だけでなく至高の美をも持つ。\n— バートランド・ラッセル",
-"世界の問題は、愚か者と狂信者がいつも非常に確信に満ち、\n賢者は疑いに満ちていることだ。\n— バートランド・ラッセル",
-"自分の信念のために決して死なない。\n私は間違っているかもしれぬから。\n— バートランド・ラッセル",
-"愛を恐れることは生を恐れること。\n生を恐れる者はすでに四分の三死んでいる。\n— バートランド・ラッセル",
-"人類を救う唯一のものは協力である。\n— バートランド・ラッセル",
-"意見において風変わりであることを恐れるな。\n今受け入れられているすべての意見は、かつて風変わりだった。\n— バートランド・ラッセル",
-"良い人生とは、愛に触発され、\n知識に導かれた人生である。\n— バートランド・ラッセル",
-"あらゆる事柄において、当然と思ってきたものに\n時折疑問符を掛けるのは健全なことだ。\n— バートランド・ラッセル",
-"退屈は道徳家にとって重大な問題である。\n人類の罪の半分はそれへの恐れから生まれる。\n— バートランド・ラッセル",
-"頭の悪い男が頭の良い男の言うことを伝えるとき、決して正確ではない。\n聞いたことを無意識に自分の理解できるものに翻訳するからだ。\n— バートランド・ラッセル",
 "チェスは縮小された人生である。\nチェスは闘争であり、戦いである。\n— 伝・ボリス・スパスキー",
 "良い手を見つけたら、\nさらに良い手を探せ。\n— エマヌエル・ラスカー",
 "勝てる試合を勝ち切るのが、最も難しい。\n— エマヌエル・ラスカー",
@@ -2981,7 +2831,6 @@ const I18N = {
 "動物は餌をくらい、人は食事をする。\n知性ある者だけが食べ方を知る。\n— ブリヤ＝サヴァラン",
 "チーズなきデザートは、\n片目だけの美女のごとし。\n— ブリヤ＝サヴァラン",
 "客を家に招くことは、\n屋根の下にいる間、その幸福を引き受けることだ。\n— ブリヤ＝サヴァラン",
-"自分自身との時間を楽しめぬ者は、\nたいてい正しい。\n— ココ・シャネル",
 "料理は技となり、高貴なる学問となった。\n— ロバート・バートン",
 "家を治めるは小さき魚を煮るがごとく、\nごく穏やかにせよ。\n— 老子",
 "空腹は最良の調味料。\n— ラテン諺",
@@ -3137,6 +2986,17 @@ const Audio = {
   /* Convolver-less plate reverb (small allpass chain) for Kizuna */
   reverb: null,
 
+  /* Compute the master gain target from the current slider value, using the
+     same perceptual curve as the live handler. Used when restoring audio
+     after a portal dip so the level matches what the user set. */
+  _targetMasterGain() {
+    const slider = document.getElementById('volume-slider');
+    let v = slider ? parseInt(slider.value, 10) : (this.savedVolume || 68);
+    if (this.isMuted) v = 0;
+    const norm = Math.max(0, Math.min(100, v)) / 100;
+    return Math.pow(norm, 1.4) * 0.6;
+  },
+
   init() {
     const slider = document.getElementById('volume-slider');
     const toggleBtn = document.getElementById('audio-toggle-btn');
@@ -3159,7 +3019,11 @@ const Audio = {
         icon.classList.remove('audio-off');
         this.isMuted = false;
         
-        const gainValue = (val / 100) * 0.35;
+        /* Perceptual (gently curved) loudness mapping. The previous linear
+           0.35 ceiling felt thin; a mild power curve with a 0.6 ceiling gives
+           a fuller, more present sound without harsh peaks. */
+        const norm = val / 100;
+        const gainValue = Math.pow(norm, 1.4) * 0.6;
         if (this.masterGain) {
           this.masterGain.gain.setTargetAtTime(gainValue, this.ctx.currentTime, 0.05);
         }
@@ -3185,7 +3049,7 @@ const Audio = {
 
     toggleBtn.addEventListener('click', () => {
       if (this.isMuted) {
-        const restoreVal = this.savedVolume > 0 ? this.savedVolume : 50;
+        const restoreVal = this.savedVolume > 0 ? this.savedVolume : 68;
         slider.value = restoreVal;
         applyVolume(restoreVal);
       } else {
@@ -3317,6 +3181,12 @@ const Audio = {
     hum.connect(out);
     const osc = this.ctx.createOscillator();
     osc.type = 'sine'; osc.frequency.value = 65;
+    /* very slow pitch drift so the floor breathes instead of sitting dead */
+    const plfo = this.ctx.createOscillator();
+    plfo.type = 'sine'; plfo.frequency.value = 0.03;
+    const plfoG = this.ctx.createGain(); plfoG.gain.value = 0.6;
+    plfo.connect(plfoG); plfoG.connect(osc.frequency);
+    plfo.start();
     const filt = this.ctx.createBiquadFilter();
     filt.type = 'lowpass'; filt.frequency.value = 180;
     osc.connect(filt); filt.connect(hum);
@@ -3448,19 +3318,25 @@ const Audio = {
     const pad = this.ctx.createGain();
     pad.gain.value = 0.04;
     pad.connect(out);
-    /* Soft pad: just two detuned sines, narrower LP for warmth */
+    /* Soft pad: two voices an octave lower (less mid-fatigue) with a very
+       slow ~0.4Hz beat instead of the old 1.5Hz buzz, plus a gentle pitch
+       drift so it shimmers rather than beats mechanically. */
     const padBus = this.ctx.createGain();
     padBus.gain.value = 0.4;
-    [165, 166.5].forEach((f, i) => {
+    [82.5, 82.9].forEach((f, i) => {
       const osc = this.ctx.createOscillator();
       osc.type = 'sine'; osc.frequency.value = f;
       const g = this.ctx.createGain();
       g.gain.value = 0.30;
+      const plfo = this.ctx.createOscillator();
+      plfo.type = 'sine'; plfo.frequency.value = 0.02 + i * 0.011;
+      const plfoG = this.ctx.createGain(); plfoG.gain.value = 0.4;
+      plfo.connect(plfoG); plfoG.connect(osc.frequency);
       osc.connect(g); g.connect(padBus);
-      osc.start();
+      osc.start(); plfo.start();
     });
     const lp = this.ctx.createBiquadFilter();
-    lp.type = 'lowpass'; lp.frequency.value = 800; lp.Q.value = 0.7;
+    lp.type = 'lowpass'; lp.frequency.value = 700; lp.Q.value = 0.6;
     padBus.connect(lp);
     if (this.reverb) {
       const dry = this.ctx.createGain(); dry.gain.value = 0.5;
@@ -3474,19 +3350,50 @@ const Audio = {
   },
 
   /* ─── TSUBOMI — "Spatial pendulum" ─────────────────────
-     A near-silent 165Hz floor; the bilateral pings via
-     strikeBilateral() carry the foreground. */
+     Previously a single static 165Hz sine — a pure, unmodulated mid
+     tone, which over long sittings becomes fatiguing and can leave a
+     ringing after-image even after leaving the room. Rebuilt as a warm,
+     low, gently-moving bed: an octave-lower root with a soft fifth,
+     both very slowly detuning and filter-drifting so the ear never
+     locks onto a fixed pitch. Immersive, never piercing. The bilateral
+     pings via strikeBilateral() still carry the foreground. */
   _buildTsubomiVoice() {
     const out = this.voiceGains.tsubomi;
     const floor = this.ctx.createGain();
-    floor.gain.value = 0.13;
+    floor.gain.value = 0.16;
     floor.connect(out);
-    const osc = this.ctx.createOscillator();
-    osc.type = 'sine'; osc.frequency.value = 165;
+
+    /* Shared warm lowpass — keeps everything soft and below the
+       harsh mid-presence region that caused fatigue. */
     const lp = this.ctx.createBiquadFilter();
-    lp.type = 'lowpass'; lp.frequency.value = 350;
-    osc.connect(lp); lp.connect(floor);
-    osc.start();
+    lp.type = 'lowpass'; lp.frequency.value = 320; lp.Q.value = 0.4;
+    lp.connect(floor);
+
+    /* Slow filter breath (≈0.04Hz, 25s period) so timbre never sits still */
+    const flfo = this.ctx.createOscillator();
+    flfo.type = 'sine'; flfo.frequency.value = 0.04;
+    const flfoG = this.ctx.createGain();
+    flfoG.gain.value = 120;
+    flfo.connect(flfoG); flfoG.connect(lp.frequency);
+    flfo.start();
+
+    /* Two soft voices an octave down (82.5Hz root + 123.75Hz fifth),
+       each with a slow independent pitch drift so they gently beat and
+       wander — organic, not a locked drone. */
+    [{ f: 82.5, g: 0.55, lfo: 0.018, depth: 0.35 },
+     { f: 123.75, g: 0.22, lfo: 0.013, depth: 0.5 }].forEach((v) => {
+      const osc = this.ctx.createOscillator();
+      osc.type = 'sine'; osc.frequency.value = v.f;
+      const og = this.ctx.createGain(); og.gain.value = v.g;
+      /* slow pitch drift */
+      const plfo = this.ctx.createOscillator();
+      plfo.type = 'sine'; plfo.frequency.value = v.lfo;
+      const plfoG = this.ctx.createGain(); plfoG.gain.value = v.depth;
+      plfo.connect(plfoG); plfoG.connect(osc.frequency);
+      osc.connect(og); og.connect(lp);
+      osc.start(); plfo.start();
+    });
+    this.voiceNodes.tsubomi = { floor };
   },
 
   /* ─── Crossfade between room voices ──────────────────── */
@@ -3523,9 +3430,11 @@ const Audio = {
       this.masterGain.gain.setValueAtTime(currentMaster, t);
       this.masterGain.gain.linearRampToValueAtTime(0, t + 0.30);
       /* Restore masterGain after the in-flight tails have ended.
-         800ms is enough for typical bell decay (~500ms) plus margin. */
+         800ms is enough for typical bell decay (~500ms) plus margin.
+         Restore to the user's actual configured level, not a fixed value. */
+      const restore = this._targetMasterGain();
       this.masterGain.gain.setValueAtTime(0, t + 0.80);
-      this.masterGain.gain.linearRampToValueAtTime(0.20, t + 1.50);
+      this.masterGain.gain.linearRampToValueAtTime(restore, t + 1.50);
     }
     /* Fade in the new voice — to a moderate base, then start
        the breathing envelope so it never sits at a constant level. */
@@ -3539,6 +3448,9 @@ const Audio = {
     /* Wick room: schedule wax pops + fizzles */
     if (modeKey === 'wick') this._startWickPops();
     else this._stopWickPops();
+    /* Distant-air ambience runs in every room, stops at the portal */
+    if (modeKey == null) this._stopDistantAir();
+    else this._startDistantAir();
     this.currentVoice = modeKey;
   },
 
@@ -3593,6 +3505,91 @@ const Audio = {
   },
 
   /* ─── Strikes (one-shot transients) ──────────────────── */
+
+  /* Distant air — a rare, very soft band-passed noise swell that drifts
+     slowly across the stereo field, like a breath of air moving through a
+     large quiet space. Adds depth and a sense of room without a drone.
+     Scheduled at long irregular intervals while inside any room. */
+  _airTimer: null,
+  _distantAir() {
+    if (!this.ctx || !this.enabled) return;
+    const t0 = this.ctx.currentTime;
+    const src = this.ctx.createBufferSource();
+    src.buffer = this._makeNoiseBuffer();
+    src.loop = true;
+    src.playbackRate.value = 0.5 + Math.random() * 0.3;
+    const bp = this.ctx.createBiquadFilter();
+    bp.type = 'bandpass';
+    bp.frequency.value = 360 + Math.random() * 260;
+    bp.Q.value = 0.7;
+    const g = this.ctx.createGain();
+    const dur = 7 + Math.random() * 6;
+    g.gain.setValueAtTime(0, t0);
+    g.gain.linearRampToValueAtTime(0.05, t0 + dur * 0.4);
+    g.gain.linearRampToValueAtTime(0, t0 + dur);
+    const pan = this.ctx.createStereoPanner ? this.ctx.createStereoPanner() : null;
+    if (pan) {
+      const from = (Math.random() < 0.5 ? -0.8 : 0.8);
+      pan.pan.setValueAtTime(from, t0);
+      pan.pan.linearRampToValueAtTime(-from, t0 + dur);
+      src.connect(bp); bp.connect(g); g.connect(pan); pan.connect(this.masterGain);
+    } else {
+      src.connect(bp); bp.connect(g); g.connect(this.masterGain);
+    }
+    src.start(t0); src.stop(t0 + dur + 0.2);
+  },
+  _startDistantAir() {
+    if (this._airTimer) return;
+    const self = this;
+    const loop = function () {
+      if (self.enabled && typeof Router !== 'undefined' && Router.current && Router.current !== 'portal') {
+        self._distantAir();
+      }
+      /* long irregular gap: 45–110s */
+      self._airTimer = setTimeout(loop, 45000 + Math.random() * 65000);
+    };
+    this._airTimer = setTimeout(loop, 25000 + Math.random() * 30000);
+  },
+  _stopDistantAir() {
+    if (this._airTimer) { clearTimeout(this._airTimer); this._airTimer = null; }
+  },
+
+  /* Aura swell — a slow, deep, breath-long sub-tone bloom used when the
+     long-stay "Stillness Aurora" first appears. Two low sines an octave
+     apart rise over ~6s, hold, and fall over ~10s through the plate
+     reverb. Felt more than heard — pure immersion, no transient attack. */
+  auraSwell() {
+    if (!this.ctx || !this.enabled) return;
+    const t0 = this.ctx.currentTime;
+    const bus = this.ctx.createGain();
+    bus.gain.setValueAtTime(0, t0);
+    bus.gain.linearRampToValueAtTime(0.16, t0 + 6);
+    bus.gain.setValueAtTime(0.16, t0 + 9);
+    bus.gain.exponentialRampToValueAtTime(0.0005, t0 + 19);
+    const lp = this.ctx.createBiquadFilter();
+    lp.type = 'lowpass'; lp.frequency.value = 240; lp.Q.value = 0.4;
+    bus.connect(lp);
+    if (this.reverb) {
+      const wet = this.ctx.createGain(); wet.gain.value = 0.5;
+      lp.connect(this.masterGain);
+      lp.connect(this.reverb); this.reverb.connect(wet); wet.connect(this.masterGain);
+    } else {
+      lp.connect(this.masterGain);
+    }
+    [55, 110].forEach((f, i) => {
+      const osc = this.ctx.createOscillator();
+      osc.type = 'sine'; osc.frequency.value = f;
+      const og = this.ctx.createGain(); og.gain.value = i === 0 ? 0.7 : 0.3;
+      /* faint drift so even this swell never sits on a dead pitch */
+      const plfo = this.ctx.createOscillator();
+      plfo.type = 'sine'; plfo.frequency.value = 0.05 + i * 0.02;
+      const plfoG = this.ctx.createGain(); plfoG.gain.value = 0.4;
+      plfo.connect(plfoG); plfoG.connect(osc.frequency);
+      osc.connect(og); og.connect(bus);
+      osc.start(t0); plfo.start(t0);
+      osc.stop(t0 + 20); plfo.stop(t0 + 20);
+    });
+  },
 
   strikeBowl(velocity, freqMult, decayMult) {
     if (!this.ctx || !this.enabled) return;
@@ -4193,6 +4190,42 @@ const ResonanceLock = {
   }
 };
 
+/* ─── IMMERSION — long-stay ambient rewards ──────────────────────────
+   Accumulates time spent inside rooms (not the portal) across a single
+   session. As the visitor stays, a vignette very slowly deepens. At a
+   hidden threshold (~18 min cumulative) the "Stillness Aurora" blooms:
+   a faint aurora breathes at the screen edges and a single deep sub-tone
+   swell rises and falls. Purely ambient — nothing to do, nothing to win.
+   Designed for people who keep the app open for long, quiet stretches. */
+const Immersion = {
+  roomMs: 0,
+  _last: performance.now(),
+  vignetteOn: false,
+  auroraOn: false,
+  AURORA_AT: 18 * 60 * 1000,     // ~18 minutes in rooms
+  VIGNETTE_AT: 6 * 60 * 1000,    // gentle deepening starts at ~6 minutes
+  tick() {
+    const now = performance.now();
+    const dt = now - this._last;
+    this._last = now;
+    /* Only accumulate while actually inside a room and the tab is visible */
+    if (typeof Router !== 'undefined' && Router.current && Router.current !== 'portal'
+        && document.visibilityState === 'visible') {
+      this.roomMs += dt;
+    }
+    if (!this.vignetteOn && this.roomMs >= this.VIGNETTE_AT) {
+      this.vignetteOn = true;
+      document.body.classList.add('stay-deep');
+    }
+    if (!this.auroraOn && this.roomMs >= this.AURORA_AT) {
+      this.auroraOn = true;
+      document.body.classList.add('aurora-on');
+      if (typeof State !== 'undefined') State.markSecret('stillness_aurora');
+      if (typeof Audio !== 'undefined' && Audio.enabled) Audio.auraSwell();
+    }
+  }
+};
+
 const CIRCADIAN = [
   { hour: 0,  rgb: [22, 18, 48] },
   { hour: 5,  rgb: [70, 55, 110] },
@@ -4443,7 +4476,7 @@ const Modals = {
     /* Secrets section — quietly reveals discovery count and consecutive days.
        The list of named secrets is intentionally cryptic: glyphs only,
        no descriptions, so each visitor must remember what they triggered. */
-    const allSecrets = ['veil_epiphany','veil_ouroboros','veil_absolute','ink_secret','ink_honor','ink_devotion','wick_mirror','wick_longburn','kiz_constellation','kiz_whisper','tsu_lotus','cross_five','portal_tatami','audio_resonance','archive_hundred'];
+    const allSecrets = ['veil_epiphany','veil_ouroboros','veil_absolute','ink_secret','ink_honor','ink_devotion','wick_mirror','wick_longburn','kiz_constellation','kiz_whisper','tsu_lotus','cross_five','portal_tatami','audio_resonance','archive_hundred','stillness_aurora'];
     const found = s.foundSecrets || {};
     const foundCount = Object.keys(found).length;
     const glyphs = {
@@ -4452,7 +4485,8 @@ const Modals = {
       wick_mirror: '映', wick_longburn: '燼',
       kiz_constellation: '星', kiz_whisper: '囁',
       tsu_lotus: '蓮',
-      cross_five: '五', portal_tatami: '畳', audio_resonance: '響', archive_hundred: '百'
+      cross_five: '五', portal_tatami: '畳', audio_resonance: '響', archive_hundred: '百',
+      stillness_aurora: '極'
     };
     const secretsHTML = allSecrets.map(k => {
       const seen = !!found[k];
@@ -8716,6 +8750,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const shouldPulse = (Router.current === 'tsubomi') ||
                         (Router.current === 'veil' && Date.now() - lastActivity > 5000);
     document.body.classList.toggle('breath-pulse', shouldPulse);
+    Immersion.tick();
   }, 500);
 
   /* Start portal previews */

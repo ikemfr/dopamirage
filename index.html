@@ -772,6 +772,15 @@
           <span data-i18n="tip_label_full">keep the candle lit</span>
         </a>
       </div>
+      <!-- Gentle disclaimer. Sits at the very bottom of the portal, in
+           a small, almost-transparent line. Concept-aligned tone — no
+           legalese, no fear. Findable if you need it; invisible if you
+           don't. -->
+      <p class="lang-serif text-[11px] md:text-[12px] leading-relaxed mt-14 mb-4 mx-auto"
+         style="opacity: 0.32; max-width: 30em; color: var(--ink); font-style: italic;"
+         data-i18n="portal_disclaimer">
+        This is only a small quiet room — not care, not a cure. If something heavier is sitting in you, please let someone trained reach for it with you. A doctor, a counsellor, or a crisis line near you.
+      </p>
     </div>
   </div>
 </section>
@@ -1347,6 +1356,14 @@ const I18N = {
     portal_note: {
       en: 'Nothing here is built to hold you. Stay as long as it helps, then leave.',
       ja: 'あなたを引き留めるものは、ここには置いていません。役に立つ間だけ、いてください。'
+    },
+    /* A quiet line of fine print. Placed at the very bottom of the
+       portal, almost transparent — present so anyone who needs it can
+       find it, never demanding attention. Tone deliberately matches
+       Dopamirage's gentle voice (no clinical/legalese phrasing). */
+    portal_disclaimer: {
+      en: 'This is only a small quiet room. If something heavier is sitting in you, please let someone trained reach for it with you. A doctor or a counsellor near you.',
+      ja: 'ここは、ささやかな静かな部屋にすぎません。心がほんとうに重いときは、どうか、訓練された人にいっしょに手を伸ばしてもらってください。お医者さん、カウンセラー、お近くの相談窓口を。'
     },
     mode_veil_eyebrow: { en: 'i', ja: '一' },
     mode_veil_name:    { en: 'Veil', ja: 'Veil' },
@@ -3892,11 +3909,21 @@ const Audio = {
     if (!this.ctx || !this.enabled) return;
     velocity = velocity || 0.6; panVal = panVal || 0; freqMult = freqMult || 1;
     const t0 = this.ctx.currentTime;
-    const fundamental = 330 * freqMult;
+    /* REBUILT — the previous version used FM synthesis with a modulation
+       index of 1.8× the carrier frequency and inharmonic partial ratios
+       (1.0/2.5/4.2). That combination produces a metallic, alarm-like
+       timbre — and because Kizuna spawns a new bloom every 4–10s, the
+       bell rings continuously while the user is in the room, which read
+       as "noisy alert sound."
+       This version uses pure additive synthesis with harmonic ratios
+       (1, 2, 3), a gentle attack, long warm decay, and a soft lowpass —
+       a calm temple-chime feel that can ring on a loop without fatigue. */
+    /* Lower fundamental so even at freqMult=1.5 we don't pierce. */
+    const fundamental = 220 * freqMult;
     const partials = [
-      { ratio: 1.00, amp: 0.5, decay: 4.0, mod: 1.4 },
-      { ratio: 2.50, amp: 0.25, decay: 2.2, mod: 2.0 },
-      { ratio: 4.20, amp: 0.12, decay: 1.4, mod: 3.5 }
+      { ratio: 1.00, amp: 0.55, decay: 4.5 },
+      { ratio: 2.00, amp: 0.18, decay: 2.4 },
+      { ratio: 3.00, amp: 0.06, decay: 1.4 }
     ];
     let pan;
     if (this.ctx.createStereoPanner) {
@@ -3907,34 +3934,37 @@ const Audio = {
       pan.panningModel = 'equalpower';
       pan.setPosition(panVal, 0, 1 - Math.abs(panVal));
     }
+    /* Warm lowpass to file off any residual harshness on higher freqMult */
+    const lp = this.ctx.createBiquadFilter();
+    lp.type = 'lowpass';
+    lp.frequency.value = Math.min(1600, fundamental * 4.5);
+    lp.Q.value = 0.5;
+    lp.connect(pan);
+
     const sumGain = this.ctx.createGain();
-    sumGain.gain.value = 1.0;
-    sumGain.connect(pan);
+    sumGain.gain.value = 0.7;  /* overall taming */
+    sumGain.connect(lp);
+
     partials.forEach(p => {
-      const carrier = this.ctx.createOscillator();
-      const modulator = this.ctx.createOscillator();
-      const modGain = this.ctx.createGain();
+      const osc = this.ctx.createOscillator();
       const env = this.ctx.createGain();
-      carrier.type = 'sine'; modulator.type = 'sine';
-      carrier.frequency.value = fundamental * p.ratio;
-      modulator.frequency.value = fundamental * p.ratio * p.mod;
-      modGain.gain.value = fundamental * p.ratio * 1.8;
-      modulator.connect(modGain); modGain.connect(carrier.frequency);
-      carrier.connect(env); env.connect(sumGain);
+      osc.type = 'sine';
+      osc.frequency.value = fundamental * p.ratio;
+      osc.connect(env); env.connect(sumGain);
       const v = velocity * p.amp * 0.5;
+      /* Gentle attack (15ms) so the strike never pops/clicks like an alert */
       env.gain.setValueAtTime(0.0001, t0);
-      env.gain.exponentialRampToValueAtTime(Math.max(v, 0.001), t0 + 0.005);
+      env.gain.linearRampToValueAtTime(Math.max(v, 0.001), t0 + 0.015);
       env.gain.exponentialRampToValueAtTime(0.0001, t0 + p.decay);
-      carrier.start(t0); modulator.start(t0);
-      carrier.stop(t0 + p.decay + 0.2);
-      modulator.stop(t0 + p.decay + 0.2);
+      osc.start(t0);
+      osc.stop(t0 + p.decay + 0.2);
     });
     /* Wet through reverb if available */
     if (this.reverb) {
-      const dry = this.ctx.createGain(); dry.gain.value = 0.6;
-      const wet = this.ctx.createGain(); wet.gain.value = 0.7;
+      const dry = this.ctx.createGain(); dry.gain.value = 0.55;
+      const wet = this.ctx.createGain(); wet.gain.value = 0.55;
       pan.connect(dry); dry.connect(this.masterGain);
-      pan.connect(this.reverb); /* reverb already connected through kizuna pad path; OK to share */
+      pan.connect(this.reverb);
       this.reverb.connect(wet); wet.connect(this.masterGain);
     } else {
       pan.connect(this.masterGain);
@@ -3958,8 +3988,16 @@ const Audio = {
     } else {
       pan = this.ctx.createGain();
     }
+    /* SOFTENED — original plink frequencies (1700–2000Hz) were piercing
+       and could read as "noise" when multiple drops stacked. Now the
+       plink lives in the 700–900Hz range, the high glint layer is gone,
+       and a lowpass tames any residual brightness. */
+    const lp = this.ctx.createBiquadFilter();
+    lp.type = 'lowpass'; lp.frequency.value = 1400; lp.Q.value = 0.5;
+    lp.connect(pan);
+
     /* Route: pan → (dry + reverb-wet) → master */
-    const dry = this.ctx.createGain(); dry.gain.value = 0.55;
+    const dry = this.ctx.createGain(); dry.gain.value = 0.5;
     const wet = this.ctx.createGain(); wet.gain.value = 0.55;
     pan.connect(dry); dry.connect(this.masterGain);
     if (this.reverb) { pan.connect(this.reverb); this.reverb.connect(wet); wet.connect(this.masterGain); }
@@ -3969,39 +4007,28 @@ const Audio = {
     const body = this.ctx.createOscillator();
     body.type = 'sine';
     body.frequency.setValueAtTime(140, t0);
-    body.frequency.exponentialRampToValueAtTime(70, t0 + 0.08);
+    body.frequency.exponentialRampToValueAtTime(70, t0 + 0.10);
     const bg = this.ctx.createGain();
     bg.gain.setValueAtTime(0, t0);
-    bg.gain.linearRampToValueAtTime(0.10, t0 + 0.003);
-    bg.gain.exponentialRampToValueAtTime(0.0005, t0 + 0.10);
-    body.connect(bg); bg.connect(pan);
-    body.start(t0); body.stop(t0 + 0.12);
+    bg.gain.linearRampToValueAtTime(0.08, t0 + 0.004);
+    bg.gain.exponentialRampToValueAtTime(0.0005, t0 + 0.12);
+    body.connect(bg); bg.connect(lp);
+    body.start(t0); body.stop(t0 + 0.14);
 
-    /* Layer 2: the plink — bright falling sine, the surface tension release */
-    const startF = 1700 + Math.random() * 300;
-    const endF = 850 + Math.random() * 150;
+    /* Layer 2: the plink — warm falling sine in a calm register */
+    const startF = 720 + Math.random() * 160;
+    const endF = 380 + Math.random() * 80;
     const plink = this.ctx.createOscillator();
     plink.type = 'sine';
     plink.frequency.setValueAtTime(startF, t0);
-    plink.frequency.exponentialRampToValueAtTime(endF, t0 + 0.20);
+    plink.frequency.exponentialRampToValueAtTime(endF, t0 + 0.22);
     const pg = this.ctx.createGain();
     pg.gain.setValueAtTime(0, t0);
-    pg.gain.linearRampToValueAtTime(0.18, t0 + 0.004);
+    pg.gain.linearRampToValueAtTime(0.13, t0 + 0.006);
     pg.gain.exponentialRampToValueAtTime(0.0008, t0 + 0.55);
-    plink.connect(pg); pg.connect(pan);
+    plink.connect(pg); pg.connect(lp);
     plink.start(t0); plink.stop(t0 + 0.6);
-
-    /* Layer 3: upper octave glint — adds shimmer */
-    const glint = this.ctx.createOscillator();
-    glint.type = 'sine';
-    glint.frequency.setValueAtTime(startF * 2, t0 + 0.003);
-    glint.frequency.exponentialRampToValueAtTime(endF * 2, t0 + 0.18);
-    const gg = this.ctx.createGain();
-    gg.gain.setValueAtTime(0, t0);
-    gg.gain.linearRampToValueAtTime(0.06, t0 + 0.005);
-    gg.gain.exponentialRampToValueAtTime(0.0005, t0 + 0.40);
-    glint.connect(gg); gg.connect(pan);
-    glint.start(t0); glint.stop(t0 + 0.45);
+    /* Layer 3 (the bright glint) removed — it was the piercing element */
   },
 
   /* Tsubomi — bilateral ping with hard pan */

@@ -1347,7 +1347,7 @@ const Nudge = {
    I18N — bilingual; design-refined copy; no awkward line breaks
    ============================================================ */
 const I18N = {
-  lang: 'ja',
+  lang: (navigator.language || navigator.userLanguage || "en").toLowerCase().startsWith("ja") ? "ja" : "en",
   S: {
     portal_eyebrow:  { en: '', ja: '' },
     portal_title:    { en: 'Dopamirage', ja: 'Dopamirage' },

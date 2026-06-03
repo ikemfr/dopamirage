@@ -1212,7 +1212,7 @@ function rotateHue(rgb, deg, satMult) {
 const STORAGE_KEY = 'stillworks_neural_v3';
 const State = {
   data: {
-    lang: 'ja', audioEnabled: true,
+    lang: (navigator.language || navigator.userLanguage || "en").toLowerCase().startsWith("ja") ? "ja" : "en", audioEnabled: true,
     crystals: [], activeBurn: null,
     stats: {
       veilStillSec: 0, veilSessions: 0,

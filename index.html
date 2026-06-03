@@ -8825,8 +8825,6 @@ function bindTatamiEgg() {
    ============================================================ */
 window.addEventListener('DOMContentLoaded', () => {
   State.load();
-  if (State.data.lang) I18N.lang = State.data.lang;
-  document.documentElement.lang = (I18N.lang === 'ja') ? 'ja' : 'en';
   document.documentElement.setAttribute("lang", I18N.lang);
   I18N.apply();
 

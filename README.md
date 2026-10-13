@@ -28,7 +28,9 @@
 
 A non-stimulant digital space. Six rooms in a single web page, each doing exactly one thing. Slowly.
 
-No accounts. No notifications. No analytics. No build step. No backend. Drop the HTML file on a static host and you have the whole thing.
+No accounts. No notifications. No build step. No backend. Drop the HTML file on a static host and you have the whole thing.
+
+Available in **English, 日本語, Español, Português and 简体中文**, with a built-in guide (open **guide / 使い方** at the top, or visit `#guide`) that shows each room in a short looping clip.
 
 The name is **dopamine** + **mirage** — the small illusion of reward that feeds produce, and what dissolves when attention returns.
 
@@ -46,6 +48,21 @@ The name is **dopamine** + **mirage** — the small illusion of reward that feed
 | **Kizuna**   · 四  | Quiet words from strangers, one by one.                | Bloom-paced quote stream + a one-line anonymous note you can leave behind. |
 | **Tsubomi**  · 五  | Light moves; breathe with the ring.                    | Box breathing paired with bilateral horizontal motion. |
 | **Hoko**     · 六  | Move in time. A steady tempo for a steady mind.        | Bilateral metronome for walking / jogging / jumping in Zone-2 cadence. |
+
+<br>
+
+---
+
+## Small things around the rooms
+
+- **Guide (`#guide`)** — a booklet-style page explaining every room, with a short demo clip per room in your language.
+- **Micro-season line** — the portal names the current one of the 72 micro-seasons (七十二候) of the old Japanese calendar.
+- **Wick intention** — an optional line for what the flame is for; it glows under the timer and stays with the mark. Candles and pomodoro bells keep time even while you're in another room.
+- **Screen stays awake** while a candle burns or Hoko is counting steps (where the browser supports it).
+- **Back button** returns to the entrance instead of leaving the site. Rooms can be deep-linked (`#wick`, `#tsubomi`, …).
+- **Keyboard** — `1`–`6` rooms · `G` guide · `A` archive · `M` mute · `L` language · `Esc` back.
+- **Archive backup** — export your marks to a file, import them on another device, or forget everything.
+- Respects `prefers-reduced-motion`.
 
 <br>
 
@@ -96,7 +113,7 @@ To deploy: copy `index.html` anywhere. GitHub Pages, Netlify, an SD card. The HT
 - **HTML Canvas 2D** for everything visual (Veil's field, Wick's flame, Kizuna's blooms, Tsubomi's pulse, Hoko's landscape).
 - **Web Audio API** for everything audible — no audio files are bundled. Bells, woodblocks, candle crackle and breath pads are all synthesized at runtime.
 - **localStorage** for session state. There is no server. There has never been a server.
-- **Tailwind CDN + Google Fonts** as the only externals. Roughly 500 KB of single-file HTML.
+- **Tailwind CDN + Google Fonts** as the only externals. Roughly 650 KB of single-file HTML.
 
 <br>
 
@@ -108,14 +125,14 @@ To deploy: copy `index.html` anywhere. GitHub Pages, Netlify, an SD card. The HT
 dopamirage/
 ├── index.html          # the whole application
 ├── README.md
-├── LICENSE
 └── docs/
-    ├── screenshot-portal.png
-    ├── screenshot-veil.png
-    └── …
+    ├── portal.png
+    └── guide/            # demo clips for the guide page (animated WebP)
+        ├── en/  ja/  es/  pt/  zh/
+        └── nav · veil · wick · inkbleed · kizuna · tsubomi · hokou .webp
 ```
 
-That's it. `index.html` contains the markup, every room's module, the audio engine, the i18n table, the state persistence layer, and the design tokens. It is intentionally legible top-to-bottom.
+That's it. `index.html` contains the markup, every room's module, the audio engine, the i18n table, the state persistence layer, and the design tokens. It is intentionally legible top-to-bottom. The guide clips are optional: if `docs/guide/` is missing, the guide simply shows text.
 
 <br>
 
@@ -128,7 +145,7 @@ These are not aspirations — they are constraints that have been applied to eve
 | Principle | What it means in practice |
 |---|---|
 | **No dark patterns.** | No streak loss. No FOMO timers. No “you'll lose your progress.” Closing the tab is supported, not punished. |
-| **No telemetry.** | We do not know that you visited. We will not know. |
+| **No tracking of you.** | Nothing you do in a room leaves your device. The hosted site counts anonymous page views (Vercel Web Analytics); self-hosted copies can drop that one script tag. |
 | **No accounts.** | Everything is in `localStorage`. Clear it, and Dopamirage forgets. |
 | **No motion you didn't ask for.** | Sounds and animations begin on a user gesture, never on page load. The visible default state is silent. |
 | **Public-domain content only.** | Every quote in Inkbleed and Kizuna is from an author who died at least 70 years ago. No licensing landmines. |
@@ -146,7 +163,7 @@ Pull requests are welcome but should pass the room's smell test:
 - Does it remove a feature, or add one?
 - Does it keep the file count at one?
 
-Bug reports and translation contributions (currently 日本語 / English) are the most useful kind of help. New rooms are discouraged unless they earn their place — six is already a lot to hold attention across.
+Bug reports and translation contributions (currently English / 日本語 / Español / Português / 简体中文) are the most useful kind of help. New rooms are discouraged unless they earn their place — six is already a lot to hold attention across.
 
 <br>
 
